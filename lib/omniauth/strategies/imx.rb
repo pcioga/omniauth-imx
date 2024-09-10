@@ -16,7 +16,6 @@ module OmniAuth
       end
 
       def callback_phase
-        # Get the tokens from the request (frontend should pass them)
         id_token = request.params['id_token']
 
         if id_token
@@ -33,27 +32,26 @@ module OmniAuth
 
           call_app!
         else
-          fail!(:invalid_credentials, 'Missing tokens')
+          fail!(:invalid_credentials, StandardError.new("Missing or invalid tokens"))
         end
       end
 
       uid do
-        id_token_payload['sub']
+        id_token_payload ? id_token_payload['sub'] : nil
       end
 
       info do
         {
-          email: id_token_payload['email']
+          email: id_token_payload ? id_token_payload['email'] : nil
         }
       end
 
       extra do
         {
-          raw_info: id_token_payload
+          raw_info: id_token_payload ? id_token_payload : nil
         }
       end
 
-      # Helper method to decode the ID token (you might need to install the 'jwt' gem for this)
       def id_token_payload
         rsa_key = fetch_rsa_key
         return unless rsa_key
@@ -74,8 +72,6 @@ module OmniAuth
           Rails.logger.error "JWT Decode Error: #{e.message}"
           {}
         end
-      rescue ::JWT::DecodeError
-        {}
       end
 
       private
