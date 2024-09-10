@@ -29,6 +29,9 @@ module OmniAuth
           env['omniauth.auth'] = auth_hash
           Rails.logger.info "AUTH HASH: #{auth_hash}"
 
+          params = { next_url: request.params['next_url'] }
+          env['omniauth.params'] = params.with_indifferent_access
+
           call_app!
         else
           fail!(:invalid_credentials, 'Missing tokens')
