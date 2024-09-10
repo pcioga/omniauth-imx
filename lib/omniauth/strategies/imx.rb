@@ -18,9 +18,8 @@ module OmniAuth
       def callback_phase
         # Get the tokens from the request (frontend should pass them)
         id_token = request.params['id_token']
-        access_token = request.params['access_token']
 
-        if id_token && access_token
+        if id_token
           auth_hash = OmniAuth::AuthHash.new({
                                                'uid' => uid,
                                                'info' => info,
@@ -28,6 +27,9 @@ module OmniAuth
                                              })
           env['omniauth.auth'] = auth_hash
           Rails.logger.info "AUTH HASH: #{auth_hash}"
+
+          params = { next_url: request.params['next_url'] }
+          env['omniauth.params'] = params.with_indifferent_access
 
           call_app!
         else
